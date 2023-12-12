@@ -15,7 +15,7 @@ const App = () => {
   const [btnMore, setBtnMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [modal, setModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImg, setModalImg] = useState('false');
   const [alt, setAlt] = useState('');
 
@@ -47,23 +47,23 @@ const App = () => {
   };
 
   const modalOpen = event => {
-    setModal(true);
+    setIsModalOpen(true);
     setModalImg(event.target.srcset);
     setAlt(event.target.alt);
   };
 
   const modalClose = event => {
     if (event.target.tagName === 'DIV' || event.code === 'Escape') {
-      setModal(false);
+      setIsModalOpen(false);
       setModalImg('');
       setAlt('');
     }
+    window.removeEventListener('keydown', modalClose);
   };
 
   const loadMore = async () => {
     const allImages = images.length;
     let searchingImages;
-
     try {
       setPageNumber(prev => prev + 1);
       setBtnMore(false);
@@ -95,7 +95,7 @@ const App = () => {
             <ImageGalleryItem modalOpen={modalOpen} images={images} />
           </ImageGallery>
         )}
-        {modal === true && (
+        {isModalOpen === true && (
           <Modal modalImg={modalImg} modalAlt={alt} modalClose={modalClose} />
         )}
       </div>

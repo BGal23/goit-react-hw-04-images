@@ -1,14 +1,11 @@
 import PropTypes from 'prop-types';
 import css from './modal.module.css';
+import { useEffect } from 'react';
 
 const Modal = ({ modalImg, modalAlt, modalClose }) => {
-  // componentDidMount() {
-  //   window.addEventListener('keydown', this.props.modalClose);
-  // }
-
-  // componentWillUnmount() {
-  //   window.removeEventListener('keydown', this.props.modalClose);
-  // }
+  useEffect(() => {
+    window.addEventListener('keydown', modalClose);
+  }, []);
 
   return (
     <div onClick={modalClose} className={css.overlay}>

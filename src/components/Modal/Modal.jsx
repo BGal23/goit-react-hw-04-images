@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 const Modal = ({ modalImg, modalAlt, modalClose }) => {
   useEffect(() => {
     window.addEventListener('keydown', modalClose);
-  }, []);
+  }, [modalClose]);
 
   return (
     <div onClick={modalClose} className={css.overlay}>

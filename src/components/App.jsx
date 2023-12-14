@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from './Button/Button';
 import ImageGallery from './ImageGallery/ImageGallery';
 import ImageGalleryItem from './ImageGalleryItem/ImageGalleryItem';
@@ -17,86 +17,72 @@ const App = () => {
   const [message, setMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImg, setModalImg] = useState('false');
-  const [alt, setAlt] = useState('');
 
-  const searchItems = async event => {
+  useEffect(() => {
+    if (searching === '') {
+      return;
+    }
+    const fetchData = async () => {
+      let searchingImages;
+
+      try {
+        setBtnMore(false);
+        setIsLoading(true);
+        setMessage('');
+        searchingImages = await getAllItem(searching, pageNumber);
+        setImages(prev => prev.concat(searchingImages));
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+        if (searchingImages.length > 11) {
+          setBtnMore(true);
+        } else {
+          setBtnMore(false);
+          setMessage("Sorry, that's all we found.");
+        }
+      }
+    };
+    fetchData();
+  }, [searching, pageNumber]);
+
+  const searchItems = event => {
     event.preventDefault();
     const query = event.target[1].value;
-    let searchingImages;
+    setSearching(query);
+    setImages([]);
+    setPageNumber(1);
+  };
 
-    try {
-      setImages([]);
-      setSearching(query);
-      setPageNumber(1);
-      setBtnMore(false);
-      setIsLoading(true);
-      setMessage('');
-      searchingImages = await getAllItem(query, pageNumber);
-      setImages([...searchingImages]);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-      if (searchingImages.length > 11) {
-        setBtnMore(true);
-      } else {
-        setBtnMore(false);
-        setMessage("Sorry, that's all we found.");
-      }
-    }
+  const loadMore = () => {
+    setImages([...images]);
+    setSearching(searching);
+    setPageNumber(prev => prev + 1);
   };
 
   const modalOpen = event => {
     setIsModalOpen(true);
     setModalImg(event.target.srcset);
-    setAlt(event.target.alt);
   };
 
   const modalClose = event => {
     if (event.target.tagName === 'DIV' || event.code === 'Escape') {
       setIsModalOpen(false);
       setModalImg('');
-      setAlt('');
     }
     window.removeEventListener('keydown', modalClose);
-  };
-
-  const loadMore = async () => {
-    const allImages = images.length;
-    let searchingImages;
-    try {
-      setPageNumber(prev => prev + 1);
-      setBtnMore(false);
-      setIsLoading(true);
-      setMessage('');
-      searchingImages = await getAllItem(searching, pageNumber);
-      setImages([...images, ...searchingImages]);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsLoading(false);
-      if (searchingImages.length + images.length > allImages + 11) {
-        setBtnMore(true);
-      } else {
-        setBtnMore(false);
-        setMessage("Sorry, that's all we found.");
-      }
-    }
   };
 
   return (
     <>
       <SearchBar searchItems={searchItems} />
       <div className={css.app}>
-        {isLoading === true ? (
-          <Loader />
-        ) : (
-          <ImageGallery>
-            <ImageGalleryItem modalOpen={modalOpen} images={images} />
-          </ImageGallery>
-        )}
+        <ImageGallery>
+          <ImageGalleryItem modalOpen={modalOpen} images={images} />
+        </ImageGallery>
+        {isLoading === true && <Loader />}
         {isModalOpen === true && (
-          <Modal modalImg={modalImg} modalAlt={alt} modalClose={modalClose} />
+          <Modal modalImg={modalImg} modalClose={modalClose} />
         )}
       </div>
       {message && <div className={css.message}>{message}</div>}
